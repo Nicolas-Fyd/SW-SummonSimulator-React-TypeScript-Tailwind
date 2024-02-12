@@ -1,4 +1,4 @@
-import { ReactNode, createContext, useEffect, useState } from 'react';
+import { ReactNode, createContext, useState } from 'react';
 import { monsters } from '../datas/monstersData';
 
 export type MonsterType = {
@@ -15,67 +15,46 @@ export type MonsterType = {
 type SummonContextType = {
     monsters: MonsterType[];
     allNonAwakenMonsters: MonsterType[];
-    summonMysticalScroll: () => void;
     allSummonedMonsters: MonsterType[];
-	summonLightAndDarkScroll: () => void;
 	chosenScroll: string;
 	changeChosenScroll: (scrollname: string) => void;
 	starFilter: number[];
 	updateStarFilter: (starNumber: number) => void;
-	summonWaterScroll: () => void;
-	summonFireScroll: () => void;
-	summonWindScroll: () => void;
-	summonLegendaryScroll: () => void;
-	summonIfritScroll: () => void;
-	summonCowGirlScroll: () => void;
 	resetAllSummonedMonsters: () => void;
+	handleClick: (event?: React.MouseEvent<HTMLButtonElement>, scroll?: string) => void; // Scroll optional because it's only chosen in context not in the SummonTool component
 	isSummonButtonClicked: boolean;
 	setSummonButtonToTrue: () => void;
+	scrollNumber: number;
+	updateScrollNumber: (multiplier: number) => void;
 }
 
 const defaultContextValue: SummonContextType = {
 	monsters: [],
 	allNonAwakenMonsters: [],
-	summonMysticalScroll: () => {},
 	allSummonedMonsters: [],
-	summonLightAndDarkScroll: () => {},
 	chosenScroll: '',
 	changeChosenScroll: () => {},
 	starFilter: [],
 	updateStarFilter: () => {},
-	summonWaterScroll: () => {},
-	summonFireScroll: () => {},
-	summonWindScroll: () => {},
-	summonLegendaryScroll: () => {},
-	summonIfritScroll: () => {},
-	summonCowGirlScroll : () => {},
 	resetAllSummonedMonsters: () => {},
+	handleClick: () => () => {},
 	isSummonButtonClicked: false,
 	setSummonButtonToTrue: () => {},
+	scrollNumber: 1,
+	updateScrollNumber: () => {},
 };
 
 export const SummonContext = createContext<SummonContextType>(defaultContextValue);
 
 const SummonContextProvider = ({ children }: { children: ReactNode}) => {
 	const [allMonsters] = useState<MonsterType[]>(monsters);
-	const [allNonAwakenMonsters, setAllNonAwakenMonsters] = useState<MonsterType[]>([]);
-	const [allNonAwakenElementaryMonsters, setAllNonAwakenElementaryMonsters] = useState<MonsterType[]>([]);
-	const [allNonAwakenDarkAndLightMonsters, setAllNonAwakenDarkAndLightMonsters] = useState<MonsterType[]>([]);
+	const [allNonAwakenMonsters] = useState<MonsterType[]>(allMonsters.filter(monster => monster.awaken_level === 0));
 	const [allSummonedMonsters, setAllSummonedMonsters] = useState<MonsterType[]>([]);
 	const [chosenScroll, setChosenScroll] = useState<string>('Mystical');
 	const [starFilter, setStarFilter] = useState<number[]>([]);
 	const [isSummonButtonClicked, setsummonButtonClicked] = useState(false);
-  
-	useEffect(() => {
-		setAllNonAwakenMonsters(allMonsters.filter(monster => monster.awaken_level === 0));
-	}, []);
-
-	useEffect(() => {
-		setAllNonAwakenElementaryMonsters(allNonAwakenMonsters.filter(monster => (monster.element === 'Fire' || monster.element === 'Water' || monster.element === 'Wind') && monster.name !== 'Ifrit' && monster.name !== 'Cow Girl'));
-		setAllNonAwakenDarkAndLightMonsters(allNonAwakenMonsters.filter(monster => (monster.element === 'Light' || monster.element === 'Dark') && monster.name !== 'Ifrit' && monster.name !== 'Cow Girl'));
-	}, [allNonAwakenMonsters]);
+	const [scrollNumber, setScrollNumber] = useState(1);
 	
-
 	// Fonction random number
 	function generateRandomNumber(maxNumber: number) {
 		return Math.floor(Math.random() * maxNumber) + 1;
@@ -83,6 +62,7 @@ const SummonContextProvider = ({ children }: { children: ReactNode}) => {
   
 	// Summon function to Mystical scrolls
 	const summonMysticalScroll = () => {
+		const allNonAwakenElementaryMonsters = allNonAwakenMonsters.filter(monster => (monster.element === 'Fire' || monster.element === 'Water' || monster.element === 'Wind') && monster.name !== 'Ifrit' && monster.name !== 'Cow Girl');
 		const randomNumber = generateRandomNumber(200);
 
 		if (randomNumber >= 1 && randomNumber <= 183) {
@@ -102,6 +82,7 @@ const SummonContextProvider = ({ children }: { children: ReactNode}) => {
 
 	// Summon function to Dark and Light scrolls
 	const summonLightAndDarkScroll = () => {
+		const allNonAwakenDarkAndLightMonsters = allNonAwakenMonsters.filter(monster => (monster.element === 'Light' || monster.element === 'Dark') && monster.name !== 'Ifrit' && monster.name !== 'Cow Girl');
 		const randomNumber = generateRandomNumber(10000);
 	
 		if (randomNumber >= 1 && randomNumber <= 9365) {
@@ -119,63 +100,21 @@ const SummonContextProvider = ({ children }: { children: ReactNode}) => {
 		}
 	};
 
-	// Summon function to Water scrolls
-	const summonWaterScroll = () => {
-		const allWaterMonsters = allNonAwakenMonsters.filter(monster => monster.element === 'Water' && monster.name !== 'Ifrit' && monster.name !== 'Cow Girl');
+	// Summon function to Elemental Scrolls
+	const summonElementalScroll = (chosenElement: string) => {
+		const filteredMonsters = allNonAwakenMonsters.filter(monster => monster.element === chosenElement && monster.name !== 'Ifrit' && monster.name !== 'Cow Girl');
 		const randomNumber = generateRandomNumber(200);
 
 		if (randomNumber >= 1 && randomNumber <= 183) {
-			const monsters = allWaterMonsters.filter(monster => monster.natural_stars === 3);
+			const monsters = filteredMonsters.filter(monster => monster.natural_stars === 3);
 			const monsterIndex = generateRandomNumber(monsters.length) - 1;
 			setAllSummonedMonsters(prevState => [...prevState, monsters[monsterIndex]]);
 		} else if (randomNumber >= 184 && randomNumber <= 199) {
-			const monsters = allWaterMonsters.filter(monster => monster.natural_stars === 4);
+			const monsters = filteredMonsters.filter(monster => monster.natural_stars === 4);
 			const monsterIndex = generateRandomNumber(monsters.length) - 1;
 			setAllSummonedMonsters(prevState => [...prevState, monsters[monsterIndex]]);
 		} else if (randomNumber === 200) {
-			const monsters = allWaterMonsters.filter(monster => monster.natural_stars === 5);
-			const monsterIndex = generateRandomNumber(monsters.length) - 1;
-			setAllSummonedMonsters(prevState => [...prevState, monsters[monsterIndex]]);
-		}
-
-	};
-
-	// Summon function to Fire scrolls
-	const summonFireScroll = () => {
-		const allFireMonsters = allNonAwakenMonsters.filter(monster => monster.element === 'Fire' && monster.name !== 'Ifrit' && monster.name !== 'Cow Girl');
-		const randomNumber = generateRandomNumber(200);
-
-		if (randomNumber >= 1 && randomNumber <= 183) {
-			const monsters = allFireMonsters.filter(monster => monster.natural_stars === 3);
-			const monsterIndex = generateRandomNumber(monsters.length) - 1;
-			setAllSummonedMonsters(prevState => [...prevState, monsters[monsterIndex]]);
-		} else if (randomNumber >= 184 && randomNumber <= 199) {
-			const monsters = allFireMonsters.filter(monster => monster.natural_stars === 4);
-			const monsterIndex = generateRandomNumber(monsters.length) - 1;
-			setAllSummonedMonsters(prevState => [...prevState, monsters[monsterIndex]]);
-		} else if (randomNumber === 200) {
-			const monsters = allFireMonsters.filter(monster => monster.natural_stars === 5);
-			const monsterIndex = generateRandomNumber(monsters.length) - 1;
-			setAllSummonedMonsters(prevState => [...prevState, monsters[monsterIndex]]);
-		}
-
-	};
-
-	// Summon function to Wind scrolls
-	const summonWindScroll = () => {
-		const allWindMonsters = allNonAwakenMonsters.filter(monster => monster.element === 'Wind' && monster.name !== 'Ifrit' && monster.name !== 'Cow Girl');
-		const randomNumber = generateRandomNumber(200);
-
-		if (randomNumber >= 1 && randomNumber <= 183) {
-			const monsters = allWindMonsters.filter(monster => monster.natural_stars === 3);
-			const monsterIndex = generateRandomNumber(monsters.length) - 1;
-			setAllSummonedMonsters(prevState => [...prevState, monsters[monsterIndex]]);
-		} else if (randomNumber >= 184 && randomNumber <= 199) {
-			const monsters = allWindMonsters.filter(monster => monster.natural_stars === 4);
-			const monsterIndex = generateRandomNumber(monsters.length) - 1;
-			setAllSummonedMonsters(prevState => [...prevState, monsters[monsterIndex]]);
-		} else if (randomNumber === 200) {
-			const monsters = allWindMonsters.filter(monster => monster.natural_stars === 5);
+			const monsters = filteredMonsters.filter(monster => monster.natural_stars === 5);
 			const monsterIndex = generateRandomNumber(monsters.length) - 1;
 			setAllSummonedMonsters(prevState => [...prevState, monsters[monsterIndex]]);
 		}
@@ -197,20 +136,12 @@ const SummonContextProvider = ({ children }: { children: ReactNode}) => {
 		}
 	};
 
-	// Summon function to Ifrit Scrolls
-	const summonIfritScroll = () => {
-		const allIfritMonsters = allNonAwakenMonsters.filter(monster => (monster.element === 'Fire' || monster.element === 'Water' || monster.element === 'Wind') && monster.name === 'Ifrit');
+	// Summon function to Ifrit or CowGirl scrolls
+	const summonIfritOrCowgirlScroll = (chosenMonster: string) => {
+		const filteredMonsters = allNonAwakenMonsters.filter(monster => (monster.element === 'Fire' || monster.element === 'Water' || monster.element === 'Wind') && monster.name === chosenMonster);
 		
-		const monsterIndex = generateRandomNumber(allIfritMonsters.length) - 1;
-		setAllSummonedMonsters(prevState => [...prevState, allIfritMonsters[monsterIndex]]);
-	};
-
-	// Summon function to Cow Girl scrolls
-	const summonCowGirlScroll = () => {
-		const allCowGirlMonsters = allNonAwakenMonsters.filter(monster => (monster.element === 'Fire' || monster.element === 'Water' || monster.element === 'Wind') && monster.name === 'Cow Girl');
-		
-		const monsterIndex = generateRandomNumber(allCowGirlMonsters.length) - 1;
-		setAllSummonedMonsters(prevState => [...prevState, allCowGirlMonsters[monsterIndex]]);
+		const monsterIndex = generateRandomNumber(filteredMonsters.length) - 1;
+		setAllSummonedMonsters(prevState => [...prevState, filteredMonsters[monsterIndex]]);
 	};
 
   
@@ -235,13 +166,50 @@ const SummonContextProvider = ({ children }: { children: ReactNode}) => {
 		setsummonButtonClicked(false);
 	};
 
+	const handleClick = () => {
+		switch (chosenScroll) {
+		case 'Mystical':
+			summonMysticalScroll();
+			break;
+		case 'Light & Dark':
+			summonLightAndDarkScroll();
+			break;
+		case 'Water':
+			summonElementalScroll('Water');
+			break;
+		case 'Fire':
+			summonElementalScroll('Fire');
+			break;
+		case 'Wind':
+			summonElementalScroll('Wind');
+			break;
+		case 'Legendary':
+			summonLegendaryScroll();
+			break;
+		case 'Ifrit':
+			summonIfritOrCowgirlScroll('Ifrit');
+			break;
+		case 'Cowgirl':
+			summonIfritOrCowgirlScroll('Cow Girl');
+			break;
+		default:
+			break;
+		}
+	
+		if (!isSummonButtonClicked) setSummonButtonToTrue();
+	};
+
 	const setSummonButtonToTrue = () => {
 		setsummonButtonClicked(true);
 	};
 
+	const updateScrollNumber = (multiplier: number) => {
+		setScrollNumber(multiplier);
+	};
+
 
 	return (
-		<SummonContext.Provider value={{monsters, allNonAwakenMonsters, summonMysticalScroll, allSummonedMonsters, summonLightAndDarkScroll, chosenScroll, changeChosenScroll, starFilter, updateStarFilter, summonWaterScroll, summonFireScroll, summonWindScroll, summonLegendaryScroll, summonIfritScroll, summonCowGirlScroll, resetAllSummonedMonsters, isSummonButtonClicked, setSummonButtonToTrue}}>
+		<SummonContext.Provider value={{monsters, allNonAwakenMonsters, allSummonedMonsters, chosenScroll, changeChosenScroll, starFilter, updateStarFilter, resetAllSummonedMonsters, isSummonButtonClicked, setSummonButtonToTrue, handleClick, scrollNumber, updateScrollNumber}}>
 			{children}
 		</SummonContext.Provider>
 	);

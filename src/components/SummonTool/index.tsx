@@ -3,41 +3,7 @@ import Star from '../Summon/SummonStats/SummonStatsNaturalStars/Star';
 import { useContext} from 'react';
 
 const SummonTool = () => {
-	const { summonMysticalScroll, allSummonedMonsters, summonLightAndDarkScroll, chosenScroll, summonWaterScroll, summonFireScroll, summonWindScroll, summonLegendaryScroll, summonIfritScroll, summonCowGirlScroll, isSummonButtonClicked, setSummonButtonToTrue} = useContext(SummonContext);
-
-	const handleClick = () => {
-		switch (chosenScroll) {
-		case 'Mystical':
-			summonMysticalScroll();
-			break;
-		case 'Light & Dark':
-			summonLightAndDarkScroll();
-			break;
-		case 'Water':
-			summonWaterScroll();
-			break;
-		case 'Fire':
-			summonFireScroll();
-			break;
-		case 'Wind':
-			summonWindScroll();
-			break;
-		case 'Legendary':
-			summonLegendaryScroll();
-			break;
-		case 'Ifrit':
-			summonIfritScroll();
-			break;
-		case 'Cowgirl': // Assuming 'CowGirl' in the original code was meant to be 'Cowgirl'
-			summonCowGirlScroll();
-			break;
-		default:
-			break;
-		}
-
-		
-		if(!isSummonButtonClicked) setSummonButtonToTrue();
-	};
+	const { allSummonedMonsters, handleClick, isSummonButtonClicked, scrollNumber } = useContext(SummonContext);
 
 	const lastSummonedMonster = allSummonedMonsters[allSummonedMonsters.length - 1];
 
@@ -52,7 +18,8 @@ const SummonTool = () => {
 
 	return(
 		<div className="flex flex-col items-center py-10 relative" >
-			<button className="cursor-pointer outline-none bg-[#F3BD4B] text-black text-lg flex items-center py-2 px-10 rounded-lg shadow-[0_6px_#9F662E] active:shadow-[0_3px_#9F662E] active:translate-y-1" onClick={handleClick}>SUMMON</button>
+			{/* <button className="cursor-pointer outline-none bg-[#F3BD4B] text-black text-lg flex items-center py-2 px-10 rounded-lg shadow-[0_6px_#9F662E] active:shadow-[0_3px_#9F662E] active:translate-y-1" onClick={handleClick}>SUMMON</button> */}
+			<button className="cursor-pointer outline-none bg-[#F3BD4B] text-black text-lg flex items-center py-2 px-10 rounded-lg shadow-[0_6px_#9F662E] active:shadow-[0_3px_#9F662E] active:translate-y-1" onClick={() => { for (let i = 0; i < scrollNumber; i++) { handleClick(); } }}>SUMMON</button>
 			{!isSummonButtonClicked ? (
 				<>
 					<p className="text-xs text-white pt-10">Select a scroll then click the summon button above to begin.</p>

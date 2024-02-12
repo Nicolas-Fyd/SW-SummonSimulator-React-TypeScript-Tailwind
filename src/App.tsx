@@ -9,7 +9,7 @@ function App() {
 	return (
 		<SummonContextProvider>
 			<div className="bg-[#271505] min-h-screen">
-				<div className="max-w-[80%] mx-auto flex flex-col justify-center md:flex-row gap-3 md:gap-64">
+				<div className="max-w-[80%] mx-auto flex flex-col justify-center md:flex-row gap-3 lg:gap-64">
 					<Scrolls />
 					<SummonTool />
 				</div>

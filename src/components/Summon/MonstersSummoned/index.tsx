@@ -12,7 +12,7 @@ const MonstersSummoned = () => {
 	const reversedMonsters = [...filteredMonsters].reverse();
 
 	return(
-		<div className="my-20 grid lg:grid-cols-5 md:grid-cols-4 grid-cols-2 gap-x-6 gap-y-12">
+		<div className="my-20 grid lg:grid-cols-5 md:grid-cols-4 grid-cols-2 gap-x-6 gap-y-12 mx-4">
 			{
 				reversedMonsters.map((monster, index) => (
 					<MonsterSummoned key={index} {...monster} />
